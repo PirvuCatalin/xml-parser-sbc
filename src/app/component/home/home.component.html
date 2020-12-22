@@ -23,12 +23,12 @@
                 <div>Add or remove the facts or rules:</div>
                 <br>
                 <label class="container">Facts
-                    <input type="checkbox" checked="checked" (change)="onChangeFactsVisibility($event.target)">
+                    <input type="checkbox" checked="{{showFacts ? 'checked' : ''}}" (change)="onChangeFactsVisibility()">
                     <span class="checkmark"></span>
                 </label>
 
                 <label class="container">Rules
-                    <input type="checkbox" checked="checked" (change)="onChangeRulesVisibility($event.target)">
+                    <input type="checkbox" checked="{{showRules ? 'checked' : ''}}" (change)="onChangeRulesVisibility()">
                     <span class="checkmark"></span>
                 </label>
             </div>

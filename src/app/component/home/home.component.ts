@@ -22,8 +22,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.http.get('assets/Pirvu_GabrielCatalin_341A1_SBC_Tema2_bazaDeCunostinte.xml', { responseType: 'text' }).subscribe(xmlData => {
-      this.xmlData = xmlData;
-      this.originalXmlData = this.xmlData;
+      this.updateXmlData(xmlData);
     })
 
     this.updateXmlViewerStyles();
@@ -37,8 +36,7 @@ export class HomeComponent implements OnInit {
     } else {
       let fileReader = new FileReader();
       fileReader.onload = (e) => {
-        this.xmlData = fileReader.result;
-        this.originalXmlData = this.xmlData;
+        this.updateXmlData(fileReader.result);
       }
       fileReader.readAsText(this.uploadedFile);
     }
@@ -58,21 +56,28 @@ export class HomeComponent implements OnInit {
 
   handleUseDefaultXml() {
     this.http.get('assets/Pirvu_GabrielCatalin_341A1_SBC_Tema2_bazaDeCunostinte.xml', { responseType: 'text' }).subscribe(xmlData => {
-      this.xmlData = xmlData;
-      this.originalXmlData = this.xmlData;
+      this.updateXmlData(xmlData);
     })
+  }
+
+  updateXmlData(xmlData: any) {
+    this.xmlData = xmlData;
+    this.originalXmlData = this.xmlData;
+
+    this.showRules = true;
+    this.showFacts = true;
   }
 
   showRules = true;
   showFacts = true;
 
-  onChangeRulesVisibility(showRules: any) {
-    this.showRules = showRules.checked;
+  onChangeRulesVisibility() {
+    this.showRules = !this.showRules;
     this.reCheckXml();
   }
 
-  onChangeFactsVisibility(showFacts: any) {
-    this.showFacts = showFacts.checked;
+  onChangeFactsVisibility() {
+    this.showFacts = !this.showFacts;
     this.reCheckXml();
   }
 
@@ -83,9 +88,9 @@ export class HomeComponent implements OnInit {
     if (!this.showRules) {
       let bazaDeCunostinte = resultJson.elements[0];
 
-      if (bazaDeCunostinte.elements[0].name == "reguli") {
+      if (bazaDeCunostinte.elements[0]?.name == "reguli") {
         bazaDeCunostinte.elements.splice(0, 1); // remove index 0
-      } else if (bazaDeCunostinte.elements[1].name == "reguli") {
+      } else if (bazaDeCunostinte.elements[1]?.name == "reguli") {
         bazaDeCunostinte.elements.splice(1, 1); // remove index 1
       }
     }
@@ -93,9 +98,9 @@ export class HomeComponent implements OnInit {
     if (!this.showFacts) {
       let bazaDeCunostinte = resultJson.elements[0];
 
-      if (bazaDeCunostinte.elements[0].name == "fapte") {
+      if (bazaDeCunostinte.elements[0]?.name == "fapte") {
         bazaDeCunostinte.elements.splice(0, 1); // remove index 0
-      } else if (bazaDeCunostinte.elements[1].name == "fapte") {
+      } else if (bazaDeCunostinte.elements[1]?.name == "fapte") {
         bazaDeCunostinte.elements.splice(1, 1); // remove index 1
       }
     }
