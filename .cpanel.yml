@@ -1,0 +1,5 @@
+deployment:
+ tasks:
+  - export DEPLOYPATH=/home/catalinpirv/subdomains/xml-parser-sbc
+  - /bin/rm -Rf $DEPLOYPATH/*
+  - /bin/cp -R dist/xml-parser-sbc/. $DEPLOYPATH
