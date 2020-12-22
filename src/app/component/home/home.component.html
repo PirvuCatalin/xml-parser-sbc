@@ -1,0 +1,41 @@
+<div class="mini-header">
+    <div>XML Parser (SBC homework)</div>
+    <div class="about-me"><a href="https://catalin-pirvu.ro" target="_blank">About me</a></div>
+</div>
+<div class="home-component">
+    <div class="home-container">
+        <div class="xml-filter-search" [hidden]="!showFilters">
+            <div class="info-text">
+                You can either use the default knowledge base or upload a custom one (in xml format).
+                If you want to define a custom K-base you can download a template by clicking
+                <a target="_blank" download="K-base.xml"
+                    href="../../../assets/Pirvu_GabrielCatalin_341A1_SBC_Tema2_bazaDeCunostinte.xml">here</a>.
+            </div>
+            <div class="file-upload">
+                <input type="button" id="loadFileXml" value="Upload Custom XML K-Base"
+                    onclick="document.getElementById('file').click();" />
+                <input type="file" style="display:none;" id="file" name="file" accept=".xml"
+                    (change)="handleFileInput($event.target)" />
+
+                <input type="button" value="Use default XML K-Base" (click)="handleUseDefaultXml()" />
+            </div>
+            <div class="facts-rules-checkbox">
+                <div>Add or remove the facts or rules:</div>
+                <br>
+                <label class="container">Facts
+                    <input type="checkbox" checked="checked" (change)="onChangeFactsVisibility($event.target)">
+                    <span class="checkmark"></span>
+                </label>
+
+                <label class="container">Rules
+                    <input type="checkbox" checked="checked" (change)="onChangeRulesVisibility($event.target)">
+                    <span class="checkmark"></span>
+                </label>
+            </div>
+        </div>
+        <div class="xml-viewer">
+            <xml-viewer-component #xmlviewer xml="{{xmlData}}"></xml-viewer-component>
+        </div>
+        <div class="xml-filter-search" [hidden]="showFilters"></div>
+    </div>
+</div>
