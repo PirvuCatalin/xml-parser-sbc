@@ -19,18 +19,46 @@
 
                 <input type="button" value="Use default XML K-Base" (click)="handleUseDefaultXml()" />
             </div>
-            <div class="facts-rules-checkbox">
-                <div>Add or remove the facts or rules:</div>
-                <br>
-                <label class="container">Facts
-                    <input type="checkbox" checked="{{showFacts ? 'checked' : ''}}" (change)="onChangeFactsVisibility()">
-                    <span class="checkmark"></span>
-                </label>
+            <div class="facts-rules-freetext">
+                <div>
+                    <div class="free-text-search">Free text search the facts base</div>
+                    <div class="free-text-search-info">Select an attribute from the list then enter the search term
+                    </div>
+                    <div class="custom-select">
+                        <select (change)="onChangeFreeTextAttribute($event.target)">
+                            <option value="">Select attribute:</option>
+                            <option value="companie,nume">companie -> nume</option>
+                            <option value="salarii,junior,minim">salarii -> junior -> minim</option>
+                            <option value="salarii,junior,maxim">salarii -> junior -> maxim</option>
+                            <option value="salarii,middle,minim">salarii -> middle -> minim</option>
+                            <option value="salarii,middle,maxim">salarii -> middle -> maxim</option>
+                            <option value="salarii,senior,minim">salarii -> senior -> minim</option>
+                            <option value="salarii,senior,maxim">salarii -> senior -> maxim</option>
+                            <option value="angajat,nume">angajat -> nume</option>
+                            <option value="angajat,salariu">angajat -> salariu</option>
+                            <option value="angajat,ani-experienta">angajat -> ani-experienta</option>
+                            <option value="angajat,functie">angajat -> functie</option>
+                        </select>
+                    </div>
+                    <input class="free-text-search-box" type="text" placeholder="Search.." (keyup.enter)="onFreeTextSearch()">
+                    <button class="free-text-search-button" (click)="onFreeTextSearch()">Search</button>
+                </div>
+                <div class="facts-rules-checkbox">
+                    <div>Add or remove the facts or rules:</div>
+                    <br>
+                    <label class="container">Facts
+                        <input type="checkbox" checked="{{showFacts ? 'checked' : ''}}"
+                            (change)="onChangeFactsVisibility()">
+                        <span class="checkmark"></span>
+                    </label>
 
-                <label class="container">Rules
-                    <input type="checkbox" checked="{{showRules ? 'checked' : ''}}" (change)="onChangeRulesVisibility()">
-                    <span class="checkmark"></span>
-                </label>
+                    <label class="container">Rules
+                        <input type="checkbox" checked="{{showRules ? 'checked' : ''}}"
+                            (change)="onChangeRulesVisibility()">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
             </div>
         </div>
         <div class="xml-viewer">
