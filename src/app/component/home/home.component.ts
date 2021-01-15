@@ -22,8 +22,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.http.get('assets/Pirvu_GabrielCatalin_341A1_SBC_Tema2_bazaDeCunostinte.xml', { responseType: 'text' }).subscribe(xmlData => {
-      this.xmlData = xmlData;
-      this.originalXmlData = this.xmlData;
+      this.updateXmlData(xmlData);
     })
 
     this.updateXmlViewerStyles();
@@ -37,8 +36,7 @@ export class HomeComponent implements OnInit {
     } else {
       let fileReader = new FileReader();
       fileReader.onload = (e) => {
-        this.xmlData = fileReader.result;
-        this.originalXmlData = this.xmlData;
+        this.updateXmlData(fileReader.result);
       }
       fileReader.readAsText(this.uploadedFile);
     }
@@ -58,49 +56,324 @@ export class HomeComponent implements OnInit {
 
   handleUseDefaultXml() {
     this.http.get('assets/Pirvu_GabrielCatalin_341A1_SBC_Tema2_bazaDeCunostinte.xml', { responseType: 'text' }).subscribe(xmlData => {
-      this.xmlData = xmlData;
-      this.originalXmlData = this.xmlData;
+      this.updateXmlData(xmlData);
     })
+  }
+
+  updateXmlData(xmlData: any) {
+    this.xmlData = xmlData;
+    this.originalXmlData = this.xmlData;
+
+    this.showRules = true;
+    this.showFacts = true;
   }
 
   showRules = true;
   showFacts = true;
+  freeTextSearchAttribute = "";
+  freeTextSearchTerm = "";
 
-  onChangeRulesVisibility(showRules: any) {
-    this.showRules = showRules.checked;
+  onChangeRulesVisibility() {
+    this.showRules = !this.showRules;
     this.reCheckXml();
   }
 
-  onChangeFactsVisibility(showFacts: any) {
-    this.showFacts = showFacts.checked;
+  onChangeFactsVisibility() {
+    this.showFacts = !this.showFacts;
     this.reCheckXml();
+  }
+
+  onChangeFreeTextAttribute(element: any) {
+    this.freeTextSearchAttribute = element.value;
+  }
+
+  onFreeTextSearch() {
+    let searchBox: any = document.getElementsByClassName("free-text-search-box")[0];
+    if (!this.freeTextSearchAttribute || this.freeTextSearchAttribute == "") {
+      alert("Please first select a search attribute");
+    } else if (!searchBox.value || searchBox.value.trim() == "") {
+      alert("Please enter a search term");
+    } else {
+      this.freeTextSearchTerm = searchBox.value.trim();
+      this.reCheckXml();
+    }
   }
 
   reCheckXml() {
     let newXmlData = this.originalXmlData;
     var resultJson = convert.xml2js(newXmlData, { compact: false, spaces: 4 });
 
-    if (!this.showRules) {
-      let bazaDeCunostinte = resultJson.elements[0];
+    let bazaDeCunostinte = resultJson.elements[0];
 
-      if (bazaDeCunostinte.elements[0].name == "reguli") {
+    if (!this.showRules) {
+      if (bazaDeCunostinte.elements[0]?.name == "reguli") {
         bazaDeCunostinte.elements.splice(0, 1); // remove index 0
-      } else if (bazaDeCunostinte.elements[1].name == "reguli") {
+      } else if (bazaDeCunostinte.elements[1]?.name == "reguli") {
         bazaDeCunostinte.elements.splice(1, 1); // remove index 1
       }
     }
 
     if (!this.showFacts) {
-      let bazaDeCunostinte = resultJson.elements[0];
-
-      if (bazaDeCunostinte.elements[0].name == "fapte") {
+      if (bazaDeCunostinte.elements[0]?.name == "fapte") {
         bazaDeCunostinte.elements.splice(0, 1); // remove index 0
-      } else if (bazaDeCunostinte.elements[1].name == "fapte") {
+      } else if (bazaDeCunostinte.elements[1]?.name == "fapte") {
         bazaDeCunostinte.elements.splice(1, 1); // remove index 1
+      }
+    }
+
+    if (this.freeTextSearchAttribute != "" && this.freeTextSearchTerm != "") { // apply filter only on the facts base
+      let bazaDeFapte = null;
+      if (bazaDeCunostinte.elements[0]?.name == "fapte") {
+        bazaDeFapte = bazaDeCunostinte.elements[0];
+        bazaDeCunostinte.elements[0] = this.applySearchFilters(bazaDeFapte, this.freeTextSearchAttribute, this.freeTextSearchTerm);
+      } else if (bazaDeCunostinte.elements[1]?.name == "fapte") {
+        bazaDeFapte = bazaDeCunostinte.elements[1];
+        bazaDeCunostinte.elements[1] = this.applySearchFilters(bazaDeFapte, this.freeTextSearchAttribute, this.freeTextSearchTerm);
       }
     }
 
     var resultXmlFromJson = convert.js2xml(resultJson, { compact: false, spaces: 4 });
     this.xmlData = resultXmlFromJson;
   }
+
+  applySearchFilters(bazaDeFapte: any, searchAttribute: any, searchTerm: any) {
+    console.log(bazaDeFapte);
+    let copieBazaDeFapte: any = {
+      elements: [],
+      name: "fapte",
+      type: "element"
+    }
+
+    if (searchAttribute == "companie,nume") {
+      bazaDeFapte.elements.forEach((companie: any, index: any) => {
+        let numeCompanie: string = companie.elements[0].elements[0].text;
+        if (numeCompanie.toLowerCase().includes(searchTerm.toLowerCase())) {
+          copieBazaDeFapte.elements.push(companie);
+        }
+      });
+    } else if (searchAttribute == "salarii,junior,minim") {
+      let searchTermValue: number = parseInt(searchTerm);
+      if (!isNaN(searchTermValue)) {
+        bazaDeFapte.elements.forEach((companie: any, index: any) => {
+          let salariuMinim: number = parseInt(companie.elements[1].elements[0].elements[0].elements[0].text);
+          if (salariuMinim == searchTermValue) {
+            copieBazaDeFapte.elements.push(companie);
+          }
+        });
+      } else {
+        copieBazaDeFapte = bazaDeFapte;
+      }
+    } else if (searchAttribute == "salarii,junior,maxim") {
+      let searchTermValue: number = parseInt(searchTerm);
+      if (!isNaN(searchTermValue)) {
+        bazaDeFapte.elements.forEach((companie: any, index: any) => {
+          let salariuMinim: number = parseInt(companie.elements[1].elements[0].elements[1].elements[0].text);
+          if (salariuMinim == searchTermValue) {
+            copieBazaDeFapte.elements.push(companie);
+          }
+        });
+      } else {
+        copieBazaDeFapte = bazaDeFapte;
+      }
+    } else if (searchAttribute == "salarii,middle,minim") {
+      let searchTermValue: number = parseInt(searchTerm);
+      if (!isNaN(searchTermValue)) {
+        bazaDeFapte.elements.forEach((companie: any, index: any) => {
+          let salariuMinim: number = parseInt(companie.elements[1].elements[1].elements[0].elements[0].text);
+          if (salariuMinim == searchTermValue) {
+            copieBazaDeFapte.elements.push(companie);
+          }
+        });
+      } else {
+        copieBazaDeFapte = bazaDeFapte;
+      }
+    } else if (searchAttribute == "salarii,middle,maxim") {
+      let searchTermValue: number = parseInt(searchTerm);
+      if (!isNaN(searchTermValue)) {
+        bazaDeFapte.elements.forEach((companie: any, index: any) => {
+          let salariuMinim: number = parseInt(companie.elements[1].elements[1].elements[1].elements[0].text);
+          if (salariuMinim == searchTermValue) {
+            copieBazaDeFapte.elements.push(companie);
+          }
+        });
+      } else {
+        copieBazaDeFapte = bazaDeFapte;
+      }
+    } else if (searchAttribute == "salarii,senior,minim") {
+      let searchTermValue: number = parseInt(searchTerm);
+      if (!isNaN(searchTermValue)) {
+        bazaDeFapte.elements.forEach((companie: any, index: any) => {
+          let salariuMinim: number = parseInt(companie.elements[1].elements[2].elements[0].elements[0].text);
+          if (salariuMinim == searchTermValue) {
+            copieBazaDeFapte.elements.push(companie);
+          }
+        });
+      } else {
+        copieBazaDeFapte = bazaDeFapte;
+      }
+    } else if (searchAttribute == "salarii,senior,maxim") {
+      let searchTermValue: number = parseInt(searchTerm);
+      if (!isNaN(searchTermValue)) {
+        bazaDeFapte.elements.forEach((companie: any, index: any) => {
+          let salariuMinim: number = parseInt(companie.elements[1].elements[2].elements[1].elements[0].text);
+          if (salariuMinim == searchTermValue) {
+            copieBazaDeFapte.elements.push(companie);
+          }
+        });
+      } else {
+        copieBazaDeFapte = bazaDeFapte;
+      }
+    } else if (searchAttribute == "angajat,nume") {
+      bazaDeFapte.elements.forEach((companie: any, index: any) => {
+        let companieDeAdaugat = {
+          elements: [companie.elements[0], companie.elements[1]],
+          name: "companie",
+          type: "element"
+        };
+
+        let angajati: any = {
+          elements: [],
+          name: "angajati",
+          type: "element"
+        }
+        companie.elements[2].elements.forEach((angajat: any, index: any) => {
+          let numeAngajat: string = angajat.elements[0].elements[0].text;
+          if (numeAngajat.toLowerCase().includes(searchTerm.toLowerCase())) {
+            angajati.elements.push(angajat);
+          }
+        });
+        companieDeAdaugat.elements.push(angajati);
+
+        if (angajati.elements.length > 0) {
+          copieBazaDeFapte.elements.push(companieDeAdaugat);
+        }
+      });
+    } else if (searchAttribute == "angajat,salariu") {
+      let searchTermValue: number = parseInt(searchTerm);
+
+      if (!isNaN(searchTermValue)) {
+        bazaDeFapte.elements.forEach((companie: any, index: any) => {
+          let companieDeAdaugat = {
+            elements: [companie.elements[0], companie.elements[1]],
+            name: "companie",
+            type: "element"
+          };
+
+          let angajati: any = {
+            elements: [],
+            name: "angajati",
+            type: "element"
+          }
+          companie.elements[2].elements.forEach((angajat: any, index: any) => {
+            let salariu: number = parseInt(angajat.elements[1].elements[0].text);
+            if (salariu == searchTermValue) {
+              angajati.elements.push(angajat);
+            }
+          });
+          companieDeAdaugat.elements.push(angajati);
+
+          if (angajati.elements.length > 0) {
+            copieBazaDeFapte.elements.push(companieDeAdaugat);
+          }
+        });
+      } else {
+        copieBazaDeFapte = bazaDeFapte;
+      }
+
+
+    } else if (searchAttribute == "angajat,ani-experienta") {
+      let searchTermValue: number = parseInt(searchTerm);
+
+      if (!isNaN(searchTermValue)) {
+        bazaDeFapte.elements.forEach((companie: any, index: any) => {
+          let companieDeAdaugat = {
+            elements: [companie.elements[0], companie.elements[1]],
+            name: "companie",
+            type: "element"
+          };
+
+          let angajati: any = {
+            elements: [],
+            name: "angajati",
+            type: "element"
+          }
+          companie.elements[2].elements.forEach((angajat: any, index: any) => {
+            let aniExperienta: number = parseInt(angajat.elements[2].elements[0].text);
+            if (aniExperienta == searchTermValue) {
+              angajati.elements.push(angajat);
+            }
+          });
+          companieDeAdaugat.elements.push(angajati);
+
+          if (angajati.elements.length > 0) {
+            copieBazaDeFapte.elements.push(companieDeAdaugat);
+          }
+        });
+      } else {
+        copieBazaDeFapte = bazaDeFapte;
+      }
+
+
+    } else if (searchAttribute == "angajat,functie") {
+      bazaDeFapte.elements.forEach((companie: any, index: any) => {
+        let companieDeAdaugat = {
+          elements: [companie.elements[0], companie.elements[1]],
+          name: "companie",
+          type: "element"
+        };
+
+        let angajati: any = {
+          elements: [],
+          name: "angajati",
+          type: "element"
+        }
+        companie.elements[2].elements.forEach((angajat: any, index: any) => {
+          let functie: string = angajat.elements[3].elements[0].text;
+          if (functie.toLowerCase().includes(searchTerm.toLowerCase())) {
+            angajati.elements.push(angajat);
+          }
+        });
+        companieDeAdaugat.elements.push(angajati);
+
+        if (angajati.elements.length > 0) {
+          copieBazaDeFapte.elements.push(companieDeAdaugat);
+        }
+      });
+    } else {
+      copieBazaDeFapte = bazaDeFapte;
+    }
+
+    return copieBazaDeFapte;
+  }
+
+  // below you can find the old implementation using recursive methods
+  // applySearchFilters(bazaDeFapte: any, searchAttribute: any) {
+  //   var attributes1 = searchAttribute.split(",");
+  //   attributes1.pop();
+  //   var attributes2 = searchAttribute.split(",");
+  //   var searchAttributeTags = attributes1;
+  //   var searchAttributeElement = attributes2[attributes2.length - 1];
+  //   this.findAttribute(bazaDeFapte, searchAttributeTags, searchAttributeElement);
+  //   console.log(bazaDeFapte);
+  // }
+
+  // findAttribute(arr: any, searchAttributeTags: any, searchAttributeElement: any) {
+  //   if (arr.type == "element") {
+  //     if (arr.name == searchAttributeTags[0]) {
+  //       if (searchAttributeTags.length > 1) {
+  //         searchAttributeTags.shift();
+  //         arr.elements.forEach((element: any) => {
+  //           this.findAttribute(element, searchAttributeTags, searchAttributeElement);
+  //         });
+  //       } else {
+  //         console.log("found at:");
+  //         console.log(arr);
+  //       }
+  //     } else {
+  //       arr.elements.forEach((element: any) => {
+  //         this.findAttribute(element, searchAttributeTags, searchAttributeElement);
+  //       });
+  //     }
+  //   }
+  // }
 }

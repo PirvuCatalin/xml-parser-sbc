@@ -118,7 +118,7 @@ p {
 /* When the checkbox is checked, add a blue background */
 
 .container input:checked~.checkmark {
-    background-color: #2196F3;
+    background-color: #007acc;
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */
@@ -149,14 +149,57 @@ p {
     transform: rotate(45deg);
 }
 
-.facts-rules-checkbox {
+
+
+.facts-rules-checkbox > div {
+    color: rgba(0, 0, 0, 0.8);
+    font-weight: bold;
+}
+
+.facts-rules-freetext > div {
     width: 50%;
     padding: 1em;
 }
 
-.facts-rules-checkbox div {
+.facts-rules-freetext {
+    display: flex;
+    border-top-style: solid;
+    border-color: rgba(0,0,0,0.3);
+}
+
+.free-text-search {
     color: rgba(0, 0, 0, 0.8);
     font-weight: bold;
+}
+
+.free-text-search-info {
+    color: rgba(0, 0, 0, 0.6);
+    padding-top: 0.25em;
+}
+
+.custom-select {
+    padding-top: 0.25em;
+}
+
+.free-text-search-box {
+    padding: 0.25em;
+    border: none;
+    background-color: rgba(0,0,0,0.1);
+    margin-top: 0.5em;
+    font-size: 17px;
+}
+
+.free-text-search-button {
+    padding: 0.25em;
+    border-radius: 10px;
+    margin-left: 1em;
+    background-color: rgba(0,0,0,0.1);
+    margin-top: 0.5em;
+    font-size: 17px;
+}
+
+.free-text-search-box::placeholder {
+    color: black;
 }
 
 @media screen and (max-width: 992px) {
