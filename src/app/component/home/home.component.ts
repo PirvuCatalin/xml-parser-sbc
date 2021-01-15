@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { Options } from '@angular-slider/ngx-slider';
 
 declare var require: any;
 var xmlParser = require('fast-xml-parser');
@@ -132,12 +133,73 @@ export class HomeComponent implements OnInit {
       }
     }
 
+    if (this.minValue != 0 || this.maxValue != 25000) {
+      let bazaDeFapte = null;
+      if (bazaDeCunostinte.elements[0]?.name == "fapte") {
+        bazaDeFapte = bazaDeCunostinte.elements[0];
+        bazaDeCunostinte.elements[0] = this.applyRangeFilter(bazaDeFapte);
+      } else if (bazaDeCunostinte.elements[1]?.name == "fapte") {
+        bazaDeFapte = bazaDeCunostinte.elements[1];
+        bazaDeCunostinte.elements[1] = this.applyRangeFilter(bazaDeFapte);
+      }
+    }
     var resultXmlFromJson = convert.js2xml(resultJson, { compact: false, spaces: 4 });
     this.xmlData = resultXmlFromJson;
   }
 
+  applyRangeFilter(bazaDeFapte: any) {
+    let copieBazaDeFapte: any = {
+      elements: [],
+      name: "fapte",
+      type: "element"
+    }
+
+    bazaDeFapte.elements.forEach((companie: any, index: any) => {
+      let companieDeAdaugat = {
+        elements: [companie.elements[0], companie.elements[1]],
+        name: "companie",
+        type: "element"
+      };
+
+      let angajati: any = {
+        elements: [],
+        name: "angajati",
+        type: "element"
+      }
+      companie.elements[2].elements.forEach((angajat: any, index: any) => {
+        let salariu: number = parseInt(angajat.elements[1].elements[0].text);
+        if (salariu >= this.minValue && salariu <= this.maxValue) {
+          angajati.elements.push(angajat);
+        }
+      });
+      companieDeAdaugat.elements.push(angajati);
+
+      if (angajati.elements.length > 0) {
+        copieBazaDeFapte.elements.push(companieDeAdaugat);
+      }
+    });
+
+    return copieBazaDeFapte;
+  }
+
+  onUserChangeEnd(): void {
+    this.reCheckXml();
+  }
+
+  minValue: number = 0;
+  maxValue: number = 25000;
+  options: Options = {
+    floor: this.minValue,
+    ceil: this.maxValue,
+    step: 1000,
+    showTicks: true
+  };
+
+  /**
+   * Below you can find the most ugly hardcoding on the Internet.
+   * Skip this for your own safety.
+   */
   applySearchFilters(bazaDeFapte: any, searchAttribute: any, searchTerm: any) {
-    console.log(bazaDeFapte);
     let copieBazaDeFapte: any = {
       elements: [],
       name: "fapte",
@@ -279,8 +341,6 @@ export class HomeComponent implements OnInit {
       } else {
         copieBazaDeFapte = bazaDeFapte;
       }
-
-
     } else if (searchAttribute == "angajat,ani-experienta") {
       let searchTermValue: number = parseInt(searchTerm);
 
@@ -345,6 +405,74 @@ export class HomeComponent implements OnInit {
 
     return copieBazaDeFapte;
   }
+
+  rules: any = `<pre>junior(X):
+	IF (angajat.nume == X
+		AND angajat.functie == programator
+		AND angajat.ani-experienta > 0
+		AND angajat.ani-experienta <= 3) OR
+	(angajat.nume == X
+		AND angajat.functie == inginer
+		AND angajat.ani-experienta > 0
+		AND angajat.ani-experienta <= 5) OR
+	(angajat.nume == X
+		AND angajat.functie == dezvoltator software
+		AND angajat.ani-experienta > 0
+		AND angajat.ani-experienta <= 3) OR
+	(angajat.nume == X
+		AND angajat.functie == inginer software
+		AND angajat.ani-experienta > 0
+		AND angajat.ani-experienta <= 4) 
+	THEN
+	angajat.grad-senioritate = junior
+
+middle(X):
+	IF (angajat.nume == X
+		AND angajat.functie == programator
+		AND angajat.ani-experienta > 3
+		AND angajat.ani-experienta <= 5) OR
+	(angajat.nume == X
+		AND angajat.functie == inginer
+		AND angajat.ani-experienta > 5
+		AND angajat.ani-experienta <= 10) OR
+	(angajat.nume == X
+		AND angajat.functie == dezvoltator software
+		AND angajat.ani-experienta > 3
+		AND angajat.ani-experienta <= 6) OR
+	(angajat.nume == X
+		AND angajat.functie == inginer software
+		AND angajat.ani-experienta > 4
+		AND angajat.ani-experienta <= 7) 
+	THEN angajat.grad-senioritate = junior
+
+junior(X):
+	IF (angajat.nume == X
+		AND angajat.functie == programator
+		AND angajat.ani-experienta > 5) OR
+	(angajat.nume == X
+		AND angajat.functie == inginer
+		AND angajat.ani-experienta > 10) OR
+	(angajat.nume == X
+		AND angajat.functie == dezvoltator software
+		AND angajat.ani-experienta > 6) OR
+	(angajat.nume == X
+		AND angajat.functie == inginer software
+		AND angajat.ani-experienta > 7) 
+	THEN
+	angajat.grad-senioritate = junior
+
+companie-contine-pozitia(X,Y):
+	IF companie.nume == X
+		AND companie.angajati.angajat.functie == Y
+	THEN companie.contine-functia-Y = “DA”
+	ELSE companie.contine-functia-Y = “NU”
+
+poate-lucra-la(X,Y):
+	IF companie.nume == Y
+		AND angajat.nume == X
+		AND angajat.functie == companie.angajati.angajat.functie
+	THEN angajat.poate-lucra-la-X = “DA”
+	ELSE angajat.poate-lucra-la-X = “NU”</pre>`;
 
   // below you can find the old implementation using recursive methods
   // applySearchFilters(bazaDeFapte: any, searchAttribute: any) {

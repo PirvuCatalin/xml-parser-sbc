@@ -493,5 +493,61 @@
             </then>
         </senior>
 
+        <companie-contine-pozitia>
+            <if>
+                <companie>
+                    <nume>X</nume>
+                    <angajati>
+                        <angajat>
+                            <functie>Y</functie>
+                        </angajat>
+                    </angajati>
+                </companie>
+            </if>
+            <then>
+                <companie>
+                    <nume>X</nume>
+                    <contine-functia-Y>Da</contine-functia-Y>
+                </companie>
+            </then>
+            <else>
+                <companie>
+                    <nume>X</nume>
+                    <contine-functia-Y>Nu</contine-functia-Y>
+                </companie>
+            </else>
+        </companie-contine-pozitia>
+
+        <poate-lucra-la>
+            <if>
+                <companie>
+                    <nume>Y</nume>
+                    <angajati>
+                        <angajat>
+                            <functie>Z</functie>
+                        </angajat>
+                    </angajati>
+                </companie>
+                <and>
+                    <angajat>
+                        <nume>X</nume>
+                        <functie>Z</functie>
+                    </angajat>
+                </and>
+            </if>
+            <then>
+                <angajat>
+                    <nume>X</nume>
+                    <poate-lucra-la-X>Da</poate-lucra-la-X>
+                </angajat>
+            </then>
+            <else>
+                <angajat>
+                    <nume>X</nume>
+                    <poate-lucra-la-X>Nu</poate-lucra-la-X>
+                </angajat>
+            </else>
+        </poate-lucra-la>
+
     </reguli>
 </baza-de-cunostinte>
