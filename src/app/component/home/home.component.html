@@ -40,7 +40,8 @@
                             <option value="angajat,functie">angajat -> functie</option>
                         </select>
                     </div>
-                    <input class="free-text-search-box" type="text" placeholder="Search.." (keyup.enter)="onFreeTextSearch()">
+                    <input class="free-text-search-box" type="text" placeholder="Search.."
+                        (keyup.enter)="onFreeTextSearch()">
                     <button class="free-text-search-button" (click)="onFreeTextSearch()">Search</button>
                 </div>
                 <div class="facts-rules-checkbox">
@@ -58,8 +59,17 @@
                         <span class="checkmark"></span>
                     </label>
                 </div>
-                <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
             </div>
+            <div class="free-text-search-info salary-info">Choose a salary interval to filter the K-Base:</div>
+            <div class="money-slider">
+                <ngx-slider [(value)]="minValue" [(highValue)]="maxValue" [options]="options" (userChangeEnd)="onUserChangeEnd()"></ngx-slider>
+            </div>
+
+            <div class="free-text-search rules-text-info">Below you can find the xml-parsed rules:</div>
+            <div class="decodes-rules">
+                <div [innerHtml]="rules"></div>
+            </div>
+
         </div>
         <div class="xml-viewer">
             <xml-viewer-component #xmlviewer xml="{{xmlData}}"></xml-viewer-component>
